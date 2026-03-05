@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConsignaEasy - Inventario de Consignaciones</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="Sistema de inventario digital para gestionar mercancía a consignación">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px 24px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #1e293b;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-family: inherit;
+        }
+
+        .btn-admin {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+        }
+
+        .btn-admin:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-vendor {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-vendor:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .btn-icon {
+            font-size: 20px;
+        }
+
+        .info {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .info-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 32px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .logo {
+                font-size: 40px;
+            }
+
+            .btn {
+                padding: 14px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="logo">📦</div>
+            <h1>ConsignaEasy</h1>
+            <p class="subtitle">Sistema de inventario digital para gestionar mercancía a consignación</p>
+
+            <div class="buttons">
+                <a href="admin.html" class="btn btn-admin">
+                    <span class="btn-icon">🔐</span>
+                    <span>Panel Admin</span>
+                </a>
+                <a href="vendor.html" class="btn btn-vendor">
+                    <span class="btn-icon">👥</span>
+                    <span>Panel Vendedor</span>
+                </a>
+            </div>
+
+            <div class="info">
+                <div class="info-title">¿Cuál es mi rol?</div>
+                <p><strong>Admin:</strong> Crear vendedores, productos, registrar visitas (solo para ti)</p>
+                <p style="margin-top: 8px;"><strong>Vendedor:</strong> Ver tu inventario y ventas (selecciona tu código)</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
