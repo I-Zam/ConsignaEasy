@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConsignaEasy - Panel Admin</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles-sheets.css">
+</head>
+<body>
+    <div class="app">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🎁 ConsignaEasy - Admin</h1>
+                <p class="header-subtitle">Gestión de Inventario en Consignación</p>
+            </div>
+        </header>
+
+        <!-- NAVIGATION -->
+        <nav class="nav">
+            <button class="nav-btn active" data-page="dashboard">📊 Dashboard</button>
+            <button class="nav-btn" data-page="express">⚡ Express</button>
+            <button class="nav-btn" data-page="vendors">👥 Vendedores</button>
+            <button class="nav-btn" data-page="products">📦 Productos</button>
+            <button class="nav-btn" data-page="inventory">📋 Inventario</button>
+            <button class="nav-btn" data-page="config">⚙️ Config</button>
+        </nav>
+
+        <!-- PAGES -->
+        <main class="main">
+            <!-- DASHBOARD PAGE -->
+            <div id="dashboard" class="page active">
+                <div class="page-header">
+                    <h2>Dashboard</h2>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-label">VENDEDORES</div>
+                        <div class="stat-value" id="stat-vendors">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">PRODUCTOS</div>
+                        <div class="stat-value" id="stat-products">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">MOVIMIENTOS</div>
+                        <div class="stat-value" id="stat-movements">0</div>
+                    </div>
+                    <div class="stat-card highlight">
+                        <div class="stat-label">TOTAL VENTAS</div>
+                        <div class="stat-value" id="stat-sales">$0.00</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Últimos Movimientos</h3>
+                    <div id="recent-movements" class="movements-list"></div>
+                </div>
+
+                <div class="section">
+                    <button class="btn btn-primary btn-large" onclick="App.showPage('express')">
+                        ⚡ Iniciar Visita Express
+                    </button>
+                </div>
+            </div>
+
+            <!-- EXPRESS PAGE -->
+            <div id="express" class="page">
+                <div class="page-header">
+                    <h2>⚡ Visita Express</h2>
+                    <p>Registra una visita en menos de 30 segundos</p>
+                </div>
+
+                <div class="section">
+                    <label class="label">Selecciona Vendedor:</label>
+                    <select id="express-vendor" class="input-select">
+                        <option value="">-- Selecciona vendedor --</option>
+                    </select>
+                </div>
+
+                <div id="express-content" style="display: none;">
+                    <div class="section">
+                        <h3>Ventas</h3>
+                        <input type="text" id="sales-search" class="input-search" placeholder="Buscar producto...">
+                        <div id="express-sales" class="products-list"></div>
+                    </div>
+
+                    <div class="section">
+                        <h3>Restock</h3>
+                        <div id="express-restock" class="products-list"></div>
+                    </div>
+
+                    <div class="section summary">
+                        <div class="summary-item">
+                            <span>Total Ventas:</span>
+                            <strong id="express-total-sales">$0.00</strong>
+                        </div>
+                        <div class="summary-item">
+                            <span>Comisión (<span id="express-commission-pct">0</span>%):</span>
+                            <strong id="express-commission">$0.00</strong>
+                        </div>
+                        <div class="summary-item highlight">
+                            <span>A Pagar:</span>
+                            <strong id="express-to-pay">$0.00</strong>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success btn-large" onclick="App.saveExpressVisit()">
+                        ✓ Guardar Visita
+                    </button>
+                </div>
+            </div>
+
+            <!-- VENDORS PAGE -->
+            <div id="vendors" class="page">
+                <div class="page-header">
+                    <h2>👥 Vendedores</h2>
+                    <button class="btn btn-primary" onclick="App.showVendorForm()">+ Crear Vendedor</button>
+                </div>
+
+                <div id="vendor-form" class="form-section" style="display: none;">
+                    <input type="text" id="vendor-id" class="input" placeholder="ID único (ej: chimuelo_001)" required>
+                    <input type="text" id="vendor-name" class="input" placeholder="Nombre del vendedor" required>
+                    <input type="number" id="vendor-commission" class="input" placeholder="Comisión (%)" min="0" max="100" required>
+                    <button class="btn btn-success" onclick="App.saveVendor()">Guardar</button>
+                    <button class="btn btn-danger" onclick="App.hideVendorForm()">Cancelar</button>
+                </div>
+
+                <div id="vendors-list" class="list"></div>
+            </div>
+
+            <!-- PRODUCTS PAGE -->
+            <div id="products" class="page">
+                <div class="page-header">
+                    <h2>📦 Productos</h2>
+                    <button class="btn btn-primary" onclick="App.showImportForm()">📥 Importar CSV</button>
+                    <button class="btn btn-secondary" onclick="App.showProductForm()">+ Crear Producto</button>
+                </div>
+
+                <div id="import-form" class="form-section" style="display: none;">
+                    <input type="file" id="csv-file" class="input" accept=".csv" required>
+                    <button class="btn btn-success" onclick="App.importCSV()">Importar</button>
+                    <button class="btn btn-danger" onclick="App.hideImportForm()">Cancelar</button>
+                </div>
+
+                <div id="product-form" class="form-section" style="display: none;">
+                    <input type="text" id="product-category" class="input" placeholder="Categoría" required>
+                    <input type="text" id="product-name" class="input" placeholder="Nombre del producto" required>
+                    <input type="number" id="product-price" class="input" placeholder="Precio" min="0" step="0.01" required>
+                    <button class="btn btn-success" onclick="App.saveProduct()">Guardar</button>
+                    <button class="btn btn-danger" onclick="App.hideProductForm()">Cancelar</button>
+                </div>
+
+                <input type="text" id="product-search" class="input-search" placeholder="Buscar producto...">
+                <div id="products-list" class="list"></div>
+            </div>
+
+            <!-- INVENTORY PAGE -->
+            <div id="inventory" class="page">
+                <div class="page-header">
+                    <h2>📋 Inventario</h2>
+                </div>
+
+                <div class="section">
+                    <label class="label">Filtrar por Vendedor:</label>
+                    <select id="inventory-vendor-filter" class="input-select" onchange="App.loadInventory(this.value)">
+                        <option value="">-- Todos los vendedores --</option>
+                    </select>
+                </div>
+
+                <div id="inventory-list" class="list"></div>
+            </div>
+
+            <!-- CONFIG PAGE -->
+            <div id="config" class="page">
+                <div class="page-header">
+                    <h2>⚙️ Configuración</h2>
+                </div>
+
+                <div class="section">
+                    <h3>Google Apps Script</h3>
+                    <div class="config-item">
+                        <label class="label">URL del Apps Script:</label>
+                        <input type="text" id="apps-script-url" class="input" placeholder="https://script.google.com/macros/d/...">
+                        <button class="btn btn-primary" onclick="App.saveScriptUrl()">Guardar URL</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Acciones</h3>
+                    <button class="btn btn-secondary" onclick="App.syncData()">🔄 Sincronizar Datos</button>
+                    <button class="btn btn-danger" onclick="App.clearCache()">🗑️ Limpiar Cache Local</button>
+                </div>
+
+                <div class="section">
+                    <p class="info-text">
+                        ℹ️ Panel de Administrador. Tienes acceso completo a todas las funcionalidades.
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app-admin.js"></script>
+</body>
+</html>

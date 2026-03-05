@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConsignaEasy - Vendedor</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles-sheets.css">
+</head>
+<body>
+    <div class="app">
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🎁 ConsignaEasy</h1>
+                <p class="header-subtitle">Mi Inventario</p>
+            </div>
+        </header>
+
+        <!-- LOGIN SECTION -->
+        <div id="login-section" class="page active">
+            <div class="page-header" style="margin-top: 40px;">
+                <h2>Bienvenido</h2>
+                <p>Selecciona tu código de vendedor</p>
+            </div>
+
+            <div class="section" style="margin-top: 40px;">
+                <label class="label">Tu Código de Vendedor:</label>
+                <select id="vendor-select" class="input-select">
+                    <option value="">-- Selecciona tu código --</option>
+                </select>
+                <button class="btn btn-primary btn-large" onclick="App.loginVendor()" style="margin-top: 16px;">
+                    Entrar
+                </button>
+            </div>
+        </div>
+
+        <!-- NAVIGATION -->
+        <nav class="nav" id="nav-section" style="display: none;">
+            <button class="nav-btn active" data-page="my-inventory">📦 Mi Inventario</button>
+            <button class="nav-btn" data-page="my-sales">📊 Mis Ventas</button>
+            <button class="nav-btn" data-page="my-info">ℹ️ Mi Info</button>
+        </nav>
+
+        <!-- PAGES -->
+        <main class="main" id="main-section" style="display: none;">
+            <!-- MY INVENTORY PAGE -->
+            <div id="my-inventory" class="page active">
+                <div class="page-header">
+                    <h2>📦 Mi Inventario Actual</h2>
+                    <button class="btn btn-secondary btn-small" onclick="App.logout()">Salir</button>
+                </div>
+
+                <div id="my-inventory-list" class="list"></div>
+            </div>
+
+            <!-- MY SALES PAGE -->
+            <div id="my-sales" class="page">
+                <div class="page-header">
+                    <h2>📊 Mis Ventas</h2>
+                    <button class="btn btn-secondary btn-small" onclick="App.logout()">Salir</button>
+                </div>
+
+                <div class="section">
+                    <label class="label">Filtrar por período:</label>
+                    <select id="sales-period" class="input-select" onchange="App.loadMySales()">
+                        <option value="all">Todos los tiempos</option>
+                        <option value="month">Este mes</option>
+                        <option value="week">Esta semana</option>
+                    </select>
+                </div>
+
+                <div id="my-sales-list" class="list"></div>
+
+                <div class="section summary" style="margin-top: 24px;">
+                    <div class="summary-item">
+                        <span>Total Vendido:</span>
+                        <strong id="my-total-sales">$0.00</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Comisión:</span>
+                        <strong id="my-commission">$0.00</strong>
+                    </div>
+                    <div class="summary-item highlight">
+                        <span>A Recibir:</span>
+                        <strong id="my-to-receive">$0.00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MY INFO PAGE -->
+            <div id="my-info" class="page">
+                <div class="page-header">
+                    <h2>ℹ️ Mi Información</h2>
+                    <button class="btn btn-secondary btn-small" onclick="App.logout()">Salir</button>
+                </div>
+
+                <div class="section">
+                    <div class="info-card">
+                        <div class="info-label">Nombre:</div>
+                        <div class="info-value" id="my-name">-</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Código:</div>
+                        <div class="info-value" id="my-id">-</div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-label">Comisión:</div>
+                        <div class="info-value" id="my-commission-pct">-</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>Estadísticas</h3>
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-label">PRODUCTOS</div>
+                            <div class="stat-value" id="my-product-count">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">TOTAL VENDIDO</div>
+                            <div class="stat-value" id="my-total-value">$0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <button class="btn btn-danger btn-large" onclick="App.logout()">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app-vendor.js"></script>
+</body>
+</html>
