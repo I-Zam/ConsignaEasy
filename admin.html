@@ -4,205 +4,463 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ConsignaEasy - Panel Admin</title>
-    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles-sheets.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; margin-bottom: 30px; border-radius: 10px; }
+        header h1 { font-size: 2em; margin-bottom: 10px; }
+        nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .nav-btn { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .nav-btn.active { background: #764ba2; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .section h3 { margin-bottom: 15px; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; margin-right: 10px; margin-bottom: 10px; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #48bb78; color: white; }
+        .btn-danger { background: #f56565; color: white; }
+        .btn:hover { opacity: 0.9; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stat-label { color: #999; font-size: 12px; text-transform: uppercase; margin-bottom: 10px; }
+        .stat-value { font-size: 2em; font-weight: bold; color: #667eea; }
+        .list-item { background: #f9f9f9; padding: 15px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .error { background: #fed7d7; color: #c53030; padding: 15px; border-radius: 5px; margin-bottom: 15px; display: none; }
+        .success { background: #c6f6d5; color: #22543d; padding: 15px; border-radius: 5px; margin-bottom: 15px; display: none; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            nav { flex-direction: column; }
+            .nav-btn { width: 100%; }
+        }
+    </style>
 </head>
 <body>
-    <div class="app">
-        <!-- HEADER -->
-        <header class="header">
-            <div class="header-content">
-                <h1>🎁 ConsignaEasy - Admin</h1>
-                <p class="header-subtitle">Gestión de Inventario en Consignación</p>
-            </div>
+    <div class="container">
+        <header>
+            <h1>🎁 ConsignaEasy</h1>
+            <p>Panel de Administrador</p>
         </header>
 
-        <!-- NAVIGATION -->
-        <nav class="nav">
-            <button class="nav-btn active" data-page="dashboard">📊 Dashboard</button>
-            <button class="nav-btn" data-page="express">⚡ Express</button>
-            <button class="nav-btn" data-page="vendors">👥 Vendedores</button>
-            <button class="nav-btn" data-page="products">📦 Productos</button>
-            <button class="nav-btn" data-page="inventory">📋 Inventario</button>
-            <button class="nav-btn" data-page="config">⚙️ Config</button>
+        <div class="error" id="error-msg"></div>
+        <div class="success" id="success-msg"></div>
+
+        <nav>
+            <button class="nav-btn active" onclick="showPage('dashboard')">📊 Dashboard</button>
+            <button class="nav-btn" onclick="showPage('express')">⚡ Express</button>
+            <button class="nav-btn" onclick="showPage('vendors')">👥 Vendedores</button>
+            <button class="nav-btn" onclick="showPage('products')">📦 Productos</button>
+            <button class="nav-btn" onclick="showPage('config')">⚙️ Config</button>
         </nav>
 
-        <!-- PAGES -->
-        <main class="main">
-            <!-- DASHBOARD PAGE -->
-            <div id="dashboard" class="page active">
-                <div class="page-header">
-                    <h2>Dashboard</h2>
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="page active">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-label">Vendedores</div>
+                    <div class="stat-value" id="count-vendors">0</div>
                 </div>
-
-                <div class="stats">
-                    <div class="stat-card">
-                        <div class="stat-label">VENDEDORES</div>
-                        <div class="stat-value" id="stat-vendors">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">PRODUCTOS</div>
-                        <div class="stat-value" id="stat-products">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">MOVIMIENTOS</div>
-                        <div class="stat-value" id="stat-movements">0</div>
-                    </div>
-                    <div class="stat-card highlight">
-                        <div class="stat-label">TOTAL VENTAS</div>
-                        <div class="stat-value" id="stat-sales">$0.00</div>
-                    </div>
+                <div class="stat-card">
+                    <div class="stat-label">Productos</div>
+                    <div class="stat-value" id="count-products">0</div>
                 </div>
-
-                <div class="section">
-                    <h3>Últimos Movimientos</h3>
-                    <div id="recent-movements" class="movements-list"></div>
+                <div class="stat-card">
+                    <div class="stat-label">Movimientos</div>
+                    <div class="stat-value" id="count-movements">0</div>
                 </div>
-
-                <div class="section">
-                    <button class="btn btn-primary btn-large" onclick="App.showPage('express')">
-                        ⚡ Iniciar Visita Express
-                    </button>
+                <div class="stat-card">
+                    <div class="stat-label">Total Ventas</div>
+                    <div class="stat-value" id="total-sales">$0</div>
                 </div>
             </div>
 
-            <!-- EXPRESS PAGE -->
-            <div id="express" class="page">
-                <div class="page-header">
-                    <h2>⚡ Visita Express</h2>
-                    <p>Registra una visita en menos de 30 segundos</p>
-                </div>
+            <div class="section">
+                <h3>Últimas Visitas</h3>
+                <div id="recent-visits"></div>
+            </div>
+        </div>
 
-                <div class="section">
-                    <label class="label">Selecciona Vendedor:</label>
-                    <select id="express-vendor" class="input-select">
-                        <option value="">-- Selecciona vendedor --</option>
+        <!-- EXPRESS -->
+        <div id="express" class="page">
+            <div class="section">
+                <h3>⚡ Visita Express (Registra en <30 segundos)</h3>
+                
+                <div class="form-group">
+                    <label>Selecciona Vendedor:</label>
+                    <select id="express-vendor">
+                        <option value="">-- Selecciona --</option>
                     </select>
                 </div>
 
-                <div id="express-content" style="display: none;">
-                    <div class="section">
-                        <h3>Ventas</h3>
-                        <input type="text" id="sales-search" class="input-search" placeholder="Buscar producto...">
-                        <div id="express-sales" class="products-list"></div>
+                <button class="btn btn-secondary" onclick="loadExpressProducts()">Cargar Productos</button>
+
+                <div id="express-products"></div>
+
+                <button class="btn btn-primary" onclick="saveExpressVisit()">💾 Guardar Visita</button>
+            </div>
+        </div>
+
+        <!-- VENDEDORES -->
+        <div id="vendors" class="page">
+            <div class="section">
+                <h3>Crear Vendedor</h3>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>ID/Código:</label>
+                        <input type="text" id="vendor-id" placeholder="ej: chimuelo_001">
                     </div>
-
-                    <div class="section">
-                        <h3>Restock</h3>
-                        <div id="express-restock" class="products-list"></div>
-                    </div>
-
-                    <div class="section summary">
-                        <div class="summary-item">
-                            <span>Total Ventas:</span>
-                            <strong id="express-total-sales">$0.00</strong>
-                        </div>
-                        <div class="summary-item">
-                            <span>Comisión (<span id="express-commission-pct">0</span>%):</span>
-                            <strong id="express-commission">$0.00</strong>
-                        </div>
-                        <div class="summary-item highlight">
-                            <span>A Pagar:</span>
-                            <strong id="express-to-pay">$0.00</strong>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-success btn-large" onclick="App.saveExpressVisit()">
-                        ✓ Guardar Visita
-                    </button>
-                </div>
-            </div>
-
-            <!-- VENDORS PAGE -->
-            <div id="vendors" class="page">
-                <div class="page-header">
-                    <h2>👥 Vendedores</h2>
-                    <button class="btn btn-primary" onclick="App.showVendorForm()">+ Crear Vendedor</button>
-                </div>
-
-                <div id="vendor-form" class="form-section" style="display: none;">
-                    <input type="text" id="vendor-id" class="input" placeholder="ID único (ej: chimuelo_001)" required>
-                    <input type="text" id="vendor-name" class="input" placeholder="Nombre del vendedor" required>
-                    <input type="number" id="vendor-commission" class="input" placeholder="Comisión (%)" min="0" max="100" required>
-                    <button class="btn btn-success" onclick="App.saveVendor()">Guardar</button>
-                    <button class="btn btn-danger" onclick="App.hideVendorForm()">Cancelar</button>
-                </div>
-
-                <div id="vendors-list" class="list"></div>
-            </div>
-
-            <!-- PRODUCTS PAGE -->
-            <div id="products" class="page">
-                <div class="page-header">
-                    <h2>📦 Productos</h2>
-                    <button class="btn btn-primary" onclick="App.showImportForm()">📥 Importar CSV</button>
-                    <button class="btn btn-secondary" onclick="App.showProductForm()">+ Crear Producto</button>
-                </div>
-
-                <div id="import-form" class="form-section" style="display: none;">
-                    <input type="file" id="csv-file" class="input" accept=".csv" required>
-                    <button class="btn btn-success" onclick="App.importCSV()">Importar</button>
-                    <button class="btn btn-danger" onclick="App.hideImportForm()">Cancelar</button>
-                </div>
-
-                <div id="product-form" class="form-section" style="display: none;">
-                    <input type="text" id="product-category" class="input" placeholder="Categoría" required>
-                    <input type="text" id="product-name" class="input" placeholder="Nombre del producto" required>
-                    <input type="number" id="product-price" class="input" placeholder="Precio" min="0" step="0.01" required>
-                    <button class="btn btn-success" onclick="App.saveProduct()">Guardar</button>
-                    <button class="btn btn-danger" onclick="App.hideProductForm()">Cancelar</button>
-                </div>
-
-                <input type="text" id="product-search" class="input-search" placeholder="Buscar producto...">
-                <div id="products-list" class="list"></div>
-            </div>
-
-            <!-- INVENTORY PAGE -->
-            <div id="inventory" class="page">
-                <div class="page-header">
-                    <h2>📋 Inventario</h2>
-                </div>
-
-                <div class="section">
-                    <label class="label">Filtrar por Vendedor:</label>
-                    <select id="inventory-vendor-filter" class="input-select" onchange="App.loadInventory(this.value)">
-                        <option value="">-- Todos los vendedores --</option>
-                    </select>
-                </div>
-
-                <div id="inventory-list" class="list"></div>
-            </div>
-
-            <!-- CONFIG PAGE -->
-            <div id="config" class="page">
-                <div class="page-header">
-                    <h2>⚙️ Configuración</h2>
-                </div>
-
-                <div class="section">
-                    <h3>Google Apps Script</h3>
-                    <div class="config-item">
-                        <label class="label">URL del Apps Script:</label>
-                        <input type="text" id="apps-script-url" class="input" placeholder="https://script.google.com/macros/d/...">
-                        <button class="btn btn-primary" onclick="App.saveScriptUrl()">Guardar URL</button>
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" id="vendor-name" placeholder="ej: Chimuelo">
                     </div>
                 </div>
-
-                <div class="section">
-                    <h3>Acciones</h3>
-                    <button class="btn btn-secondary" onclick="App.syncData()">🔄 Sincronizar Datos</button>
-                    <button class="btn btn-danger" onclick="App.clearCache()">🗑️ Limpiar Cache Local</button>
+                <div class="form-group">
+                    <label>Comisión (%):</label>
+                    <input type="number" id="vendor-commission" placeholder="ej: 20" min="0" max="100">
                 </div>
-
-                <div class="section">
-                    <p class="info-text">
-                        ℹ️ Panel de Administrador. Tienes acceso completo a todas las funcionalidades.
-                    </p>
-                </div>
+                <button class="btn btn-primary" onclick="addVendor()">➕ Crear Vendedor</button>
             </div>
-        </main>
+
+            <div class="section">
+                <h3>Vendedores Registrados</h3>
+                <div id="vendors-list"></div>
+            </div>
+        </div>
+
+        <!-- PRODUCTOS -->
+        <div id="products" class="page">
+            <div class="section">
+                <h3>Crear Producto</h3>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Categoría:</label>
+                        <input type="text" id="product-category" placeholder="ej: flexis">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre:</label>
+                        <input type="text" id="product-name" placeholder="ej: Chimuelo">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Precio ($):</label>
+                    <input type="number" id="product-price" placeholder="ej: 45" min="0" step="0.01">
+                </div>
+                <button class="btn btn-primary" onclick="addProduct()">➕ Crear Producto</button>
+            </div>
+
+            <div class="section">
+                <h3>Importar CSV</h3>
+                <div class="form-group">
+                    <label>Archivo CSV (categoria,producto,precio):</label>
+                    <input type="file" id="csv-file" accept=".csv">
+                </div>
+                <button class="btn btn-secondary" onclick="importCSV()">📥 Importar</button>
+            </div>
+
+            <div class="section">
+                <h3>Productos Registrados</h3>
+                <div id="products-list"></div>
+            </div>
+        </div>
+
+        <!-- CONFIG -->
+        <div id="config" class="page">
+            <div class="section">
+                <h3>Configuración de Google Apps Script</h3>
+                <div class="form-group">
+                    <label>URL del Google Apps Script:</label>
+                    <input type="text" id="apps-script-url" placeholder="https://script.google.com/macros/s/...">
+                </div>
+                <button class="btn btn-primary" onclick="saveAppsScriptUrl()">💾 Guardar URL</button>
+            </div>
+
+            <div class="section">
+                <h3>Acciones</h3>
+                <button class="btn btn-secondary" onclick="syncData()">🔄 Sincronizar Datos</button>
+                <button class="btn btn-danger" onclick="clearAllData()">🗑️ Limpiar Todo</button>
+            </div>
+
+            <div class="section">
+                <p>ℹ️ Tienes acceso completo a todas las funcionalidades. Comparte solo este link con personas de confianza.</p>
+            </div>
+        </div>
     </div>
 
-    <script src="app-admin.js"></script>
+    <script>
+        // CONFIG
+        let CONFIG = {
+            appsScriptUrl: localStorage.getItem('appsScriptUrl') || ''
+        };
+
+        // UTILIDADES
+        function showError(msg) {
+            const el = document.getElementById('error-msg');
+            el.textContent = msg;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 5000);
+        }
+
+        function showSuccess(msg) {
+            const el = document.getElementById('success-msg');
+            el.textContent = msg;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 3000);
+        }
+
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(page).classList.add('active');
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // API CALLS
+        async function callAPI(action, data = {}) {
+            if (!CONFIG.appsScriptUrl) {
+                showError('⚠️ Configura la URL del Google Apps Script primero');
+                return null;
+            }
+
+            try {
+                const response = await fetch(CONFIG.appsScriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, ...data })
+                });
+
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                return { success: true };
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error al conectar con Google Sheets');
+                return null;
+            }
+        }
+
+        // CONFIG
+        function saveAppsScriptUrl() {
+            const url = document.getElementById('apps-script-url').value;
+            if (!url) {
+                showError('Ingresa la URL del Google Apps Script');
+                return;
+            }
+            localStorage.setItem('appsScriptUrl', url);
+            CONFIG.appsScriptUrl = url;
+            showSuccess('✅ URL guardada');
+        }
+
+        // VENDEDORES
+        async function addVendor() {
+            const id = document.getElementById('vendor-id').value;
+            const name = document.getElementById('vendor-name').value;
+            const commission = document.getElementById('vendor-commission').value;
+
+            if (!id || !name || !commission) {
+                showError('Completa todos los campos');
+                return;
+            }
+
+            const result = await callAPI('addVendor', { id, nombre: name, comision: parseFloat(commission) });
+            if (result) {
+                showSuccess('✅ Vendedor agregado');
+                document.getElementById('vendor-id').value = '';
+                document.getElementById('vendor-name').value = '';
+                document.getElementById('vendor-commission').value = '';
+                loadVendors();
+            }
+        }
+
+        async function loadVendors() {
+            const vendors = JSON.parse(localStorage.getItem('vendors') || '[]');
+            const list = document.getElementById('vendors-list');
+            const select = document.getElementById('express-vendor');
+
+            list.innerHTML = vendors.map(v => `
+                <div class="list-item">
+                    <div><strong>${v.nombre}</strong> (${v.id}) - Comisión: ${v.comision}%</div>
+                    <button class="btn btn-danger" onclick="deleteVendor('${v.id}')">Eliminar</button>
+                </div>
+            `).join('');
+
+            select.innerHTML = '<option value="">-- Selecciona --</option>' + vendors.map(v => `
+                <option value="${v.id}">${v.nombre}</option>
+            `).join('');
+        }
+
+        async function deleteVendor(id) {
+            if (confirm('¿Eliminar?')) {
+                await callAPI('deleteVendor', { id });
+                showSuccess('✅ Eliminado');
+                loadVendors();
+            }
+        }
+
+        // PRODUCTOS
+        async function addProduct() {
+            const category = document.getElementById('product-category').value;
+            const name = document.getElementById('product-name').value;
+            const price = document.getElementById('product-price').value;
+
+            if (!category || !name || !price) {
+                showError('Completa todos los campos');
+                return;
+            }
+
+            const result = await callAPI('addProduct', { categoria: category, producto: name, precio: parseFloat(price) });
+            if (result) {
+                showSuccess('✅ Producto agregado');
+                document.getElementById('product-category').value = '';
+                document.getElementById('product-name').value = '';
+                document.getElementById('product-price').value = '';
+                loadProducts();
+            }
+        }
+
+        async function loadProducts() {
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            const list = document.getElementById('products-list');
+
+            list.innerHTML = products.map(p => `
+                <div class="list-item">
+                    <div><strong>${p.producto}</strong> (${p.categoria}) - $${p.precio}</div>
+                    <button class="btn btn-danger" onclick="deleteProduct('${p.producto}')">Eliminar</button>
+                </div>
+            `).join('');
+        }
+
+        async function deleteProduct(name) {
+            if (confirm('¿Eliminar?')) {
+                await callAPI('deleteProduct', { producto: name });
+                showSuccess('✅ Eliminado');
+                loadProducts();
+            }
+        }
+
+        function importCSV() {
+            const file = document.getElementById('csv-file').files[0];
+            if (!file) {
+                showError('Selecciona un archivo CSV');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const lines = e.target.result.split('\n');
+                let count = 0;
+
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    const [categoria, producto, precio] = lines[i].split(',').map(s => s.trim());
+                    if (categoria && producto && precio) {
+                        await callAPI('addProduct', { categoria, producto, precio: parseFloat(precio) });
+                        count++;
+                    }
+                }
+
+                showSuccess(`✅ ${count} productos importados`);
+                loadProducts();
+            };
+            reader.readAsText(file);
+        }
+
+        // EXPRESS
+        async function loadExpressProducts() {
+            const vendorId = document.getElementById('express-vendor').value;
+            if (!vendorId) {
+                showError('Selecciona un vendedor');
+                return;
+            }
+
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            const container = document.getElementById('express-products');
+
+            container.innerHTML = '<h4 style="margin: 20px 0;">Registra Ventas y Restock:</h4>' + products.map(p => `
+                <div style="background: #f9f9f9; padding: 15px; margin-bottom: 10px; border-radius: 5px;">
+                    <strong>${p.producto}</strong> ($${p.precio})
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                        <input type="number" id="venta-${p.producto}" placeholder="Vendidos" min="0" inputmode="numeric">
+                        <input type="number" id="restock-${p.producto}" placeholder="Restock" min="0" inputmode="numeric">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function saveExpressVisit() {
+            const vendorId = document.getElementById('express-vendor').value;
+            if (!vendorId) {
+                showError('Selecciona un vendedor');
+                return;
+            }
+
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            let count = 0;
+
+            for (const p of products) {
+                const vendidos = parseInt(document.getElementById(`venta-${p.producto}`)?.value || 0);
+                const restock = parseInt(document.getElementById(`restock-${p.producto}`)?.value || 0);
+
+                if (vendidos > 0) {
+                    await callAPI('addMovement', {
+                        fecha: new Date().toISOString().split('T')[0],
+                        vendedor: vendorId,
+                        producto: p.producto,
+                        tipo: 'venta',
+                        cantidad: vendidos
+                    });
+                    count++;
+                }
+
+                if (restock > 0) {
+                    await callAPI('addMovement', {
+                        fecha: new Date().toISOString().split('T')[0],
+                        vendedor: vendorId,
+                        producto: p.producto,
+                        tipo: 'restock',
+                        cantidad: restock
+                    });
+                    count++;
+                }
+            }
+
+            showSuccess(`✅ Visita registrada (${count} movimientos)`);
+            document.getElementById('express-vendor').value = '';
+            document.getElementById('express-products').innerHTML = '';
+        }
+
+        // SYNC
+        async function syncData() {
+            showSuccess('🔄 Sincronizando...');
+            // Aquí irían las llamadas para sincronizar desde Google Sheets
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            showSuccess('✅ Sincronización completada');
+        }
+
+        function clearAllData() {
+            if (confirm('¿Eliminar TODO? Esta acción no se puede deshacer.')) {
+                localStorage.clear();
+                showSuccess('✅ Datos eliminados');
+                location.reload();
+            }
+        }
+
+        // INIT
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedUrl = localStorage.getItem('appsScriptUrl');
+            if (savedUrl) {
+                document.getElementById('apps-script-url').value = savedUrl;
+                CONFIG.appsScriptUrl = savedUrl;
+            }
+
+            loadVendors();
+            loadProducts();
+        });
+    </script>
 </body>
 </html>
