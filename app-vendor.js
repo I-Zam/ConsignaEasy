@@ -1,12 +1,19 @@
 // ============================================
-// CONSIGNAEASY - APP-VENDOR.JS
+// CONSIGNAEASY - APP-VENDOR.JS (REFACTORIZADO)
 // Panel de Vendedor (Solo Lectura)
 // ============================================
 
-let CONFIG = {
+const CONFIG = {
     appsScriptUrl: localStorage.getItem('appsScriptUrl') || '',
     currentVendor: null,
     cacheExpiry: 5 * 60 * 1000
+};
+
+let appState = {
+    vendors: [],
+    products: [],
+    inventory: [],
+    movements: []
 };
 
 // ============================================
@@ -20,6 +27,7 @@ const Cache = {
             timestamp: Date.now()
         }));
     },
+    
     getData(key) {
         const cached = localStorage.getItem(key);
         if (!cached) return null;
@@ -40,11 +48,13 @@ const Cache = {
 const API = {
     async call(action, data = {}) {
         if (!CONFIG.appsScriptUrl) {
-            alert('Error de configuración. Contacta al administrador.');
+            showError('Error de configuración. Contacta al administrador.');
             return null;
         }
 
         try {
+            console.log('📤 Enviando:', { action, ...data });
+            
             const response = await fetch(CONFIG.appsScriptUrl, {
                 method: 'POST',
                 headers: {
@@ -53,318 +63,372 @@ const API = {
                 body: JSON.stringify({ action, ...data })
             });
 
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
             const result = await response.json();
-            return result.success ? result.data : null;
+            console.log('📥 Respuesta:', result);
+            
+            return result;
         } catch (error) {
-            console.error('Error en API:', error);
+            console.error('❌ Error en API:', error);
+            showError('Error al conectar: ' + error.message);
             return null;
         }
     },
 
     async getProducts() {
-        let products = Cache.getData('products');
-        if (products) return products;
+        let cached = Cache.getData('products');
+        if (cached) return cached;
 
-        products = await this.call('getProducts');
-        if (products) Cache.setData('products', products);
-        return products || [];
+        const result = await this.call('getProducts');
+        if (result && result.success) {
+            Cache.setData('products', result.data);
+            return result.data || [];
+        }
+        return [];
     },
 
     async getVendors() {
-        let vendors = Cache.getData('vendors');
-        if (vendors) return vendors;
+        let cached = Cache.getData('vendors');
+        if (cached) return cached;
 
-        vendors = await this.call('getVendors');
-        if (vendors) Cache.setData('vendors', vendors);
-        return vendors || [];
+        const result = await this.call('getVendors');
+        if (result && result.success) {
+            Cache.setData('vendors', result.data);
+            return result.data || [];
+        }
+        return [];
     },
 
     async getInventory(vendorId) {
-        const inventory = await this.call('getInventory', { vendorId });
-        return inventory || [];
+        const result = await this.call('getInventory', { vendedor: vendorId });
+        if (result && result.success) {
+            return result.data || [];
+        }
+        return [];
     },
 
-    async getMovements() {
-        let movements = Cache.getData('movements');
-        if (movements) return movements;
-
-        movements = await this.call('getMovements');
-        if (movements) Cache.setData('movements', movements);
-        return movements || [];
+    async getMovements(vendorId) {
+        const result = await this.call('getMovements', { vendedor: vendorId });
+        if (result && result.success) {
+            return result.data || [];
+        }
+        return [];
     }
 };
 
 // ============================================
-// UTILS
+// UTILIDADES UI
 // ============================================
 
-const Utils = {
-    formatCurrency(value) {
-        return '$' + parseFloat(value).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    },
-    formatDate(dateStr) {
-        const d = new Date(dateStr + 'T00:00:00');
-        return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
-    },
-    isThisMonth(dateStr) {
-        const d = new Date(dateStr + 'T00:00:00');
-        const now = new Date();
-        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    },
-    isThisWeek(dateStr) {
-        const d = new Date(dateStr + 'T00:00:00');
-        const now = new Date();
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay());
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        return d >= startOfWeek && d <= endOfWeek;
+function showError(msg) {
+    const errorDiv = document.getElementById('error-message');
+    if (errorDiv) {
+        errorDiv.textContent = msg;
+        errorDiv.style.display = 'block';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
     }
-};
+}
 
-// ============================================
-// APP
-// ============================================
-
-const App = {
-    async init() {
-        this.setupEventListeners();
-        await this.loadVendorList();
-    },
-
-    setupEventListeners() {
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.showPage(e.target.dataset.page);
-            });
-        });
-    },
-
-    // ============================================
-    // LOGIN
-    // ============================================
-
-    async loadVendorList() {
-        const vendors = await API.getVendors();
-        const select = document.getElementById('vendor-select');
-
-        select.innerHTML = '<option value="">-- Selecciona tu código --</option>';
-        vendors.forEach(v => {
-            const option = document.createElement('option');
-            option.value = v.id;
-            option.textContent = `${v.name} (${v.id})`;
-            select.appendChild(option);
-        });
-    },
-
-    async loginVendor() {
-        const vendorId = document.getElementById('vendor-select').value;
-        if (!vendorId) {
-            alert('Selecciona tu código de vendedor');
-            return;
-        }
-
-        const vendors = await API.getVendors();
-        const vendor = vendors.find(v => v.id === vendorId);
-
-        if (!vendor) {
-            alert('Vendedor no encontrado');
-            return;
-        }
-
-        CONFIG.currentVendor = vendor;
-        localStorage.setItem('currentVendor', JSON.stringify(vendor));
-
-        // Mostrar panel de vendedor
-        document.getElementById('login-section').style.display = 'none';
-        document.getElementById('nav-section').style.display = 'flex';
-        document.getElementById('main-section').style.display = 'block';
-
-        // Actualizar header
-        document.querySelector('.header-subtitle').textContent = `Hola, ${vendor.name}`;
-
-        // Cargar datos
-        this.loadMyInventory();
-    },
-
-    logout() {
-        CONFIG.currentVendor = null;
-        localStorage.removeItem('currentVendor');
-
-        document.getElementById('login-section').style.display = 'block';
-        document.getElementById('nav-section').style.display = 'none';
-        document.getElementById('main-section').style.display = 'none';
-
-        document.querySelector('.header-subtitle').textContent = 'Mi Inventario';
-        document.getElementById('vendor-select').value = '';
-
-        this.loadVendorList();
-    },
-
-    // ============================================
-    // PAGES
-    // ============================================
-
-    showPage(pageName) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(pageName).classList.add('active');
-
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
-
-        if (pageName === 'my-inventory') this.loadMyInventory();
-        if (pageName === 'my-sales') this.loadMySales();
-        if (pageName === 'my-info') this.loadMyInfo();
-    },
-
-    // ============================================
-    // MI INVENTARIO
-    // ============================================
-
-    async loadMyInventory() {
-        const vendor = CONFIG.currentVendor;
-        const inventory = await API.getInventory(vendor.id);
-        const products = await API.getProducts();
-        const container = document.getElementById('my-inventory-list');
-
-        if (inventory.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📦</div><div class="empty-state-text">No hay inventario asignado</div></div>';
-            return;
-        }
-
-        container.innerHTML = inventory.map(inv => {
-            const product = products.find(p => p.name === inv.product);
-            const status = inv.quantity > 5 ? 'good' : inv.quantity > 0 ? 'warning' : 'critical';
-            const statusText = inv.quantity > 5 ? '✓ Bien' : inv.quantity > 0 ? '⚠️ Bajo' : '❌ Agotado';
-
-            return `
-                <div class="list-item">
-                    <div class="list-item-content">
-                        <div class="list-item-title">${inv.product}</div>
-                        <div class="list-item-subtitle">
-                            Cantidad: ${inv.quantity} | 
-                            Precio: ${product ? Utils.formatCurrency(product.price) : 'N/A'} | 
-                            ${statusText}
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-    },
-
-    // ============================================
-    // MIS VENTAS
-    // ============================================
-
-    async loadMySales() {
-        const vendor = CONFIG.currentVendor;
-        const movements = await API.getMovements();
-        const products = await API.getProducts();
-        const period = document.getElementById('sales-period').value;
-
-        // Filtrar ventas del vendedor
-        let sales = movements.filter(m => m.type === 'venta' && m.vendor === vendor.name);
-
-        // Filtrar por período
-        if (period === 'month') {
-            sales = sales.filter(m => Utils.isThisMonth(m.date));
-        } else if (period === 'week') {
-            sales = sales.filter(m => Utils.isThisWeek(m.date));
-        }
-
-        const container = document.getElementById('my-sales-list');
-
-        if (sales.length === 0) {
-            container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><div class="empty-state-text">No hay ventas en este período</div></div>';
-            this.updateMySalesSummary([], products);
-            return;
-        }
-
-        container.innerHTML = sales.map(sale => {
-            const product = products.find(p => p.name === sale.product);
-            const saleTotal = sale.quantity * (product ? product.price : 0);
-
-            return `
-                <div class="list-item">
-                    <div class="list-item-content">
-                        <div class="list-item-title">${sale.product}</div>
-                        <div class="list-item-subtitle">
-                            ${sale.quantity} unidades × ${product ? Utils.formatCurrency(product.price) : 'N/A'} = ${Utils.formatCurrency(saleTotal)} | 
-                            ${Utils.formatDate(sale.date)}
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        this.updateMySalesSummary(sales, products);
-    },
-
-    updateMySalesSummary(sales, products) {
-        const vendor = CONFIG.currentVendor;
-        let totalSales = 0;
-
-        sales.forEach(sale => {
-            const product = products.find(p => p.name === sale.product);
-            if (product) {
-                totalSales += sale.quantity * product.price;
-            }
-        });
-
-        const commission = totalSales * (vendor.commission / 100);
-        const toReceive = totalSales - commission;
-
-        document.getElementById('my-total-sales').textContent = Utils.formatCurrency(totalSales);
-        document.getElementById('my-commission').textContent = Utils.formatCurrency(commission);
-        document.getElementById('my-to-receive').textContent = Utils.formatCurrency(toReceive);
-    },
-
-    // ============================================
-    // MI INFORMACIÓN
-    // ============================================
-
-    async loadMyInfo() {
-        const vendor = CONFIG.currentVendor;
-        const inventory = await API.getInventory(vendor.id);
-        const movements = await API.getMovements();
-        const products = await API.getProducts();
-
-        // Información básica
-        document.getElementById('my-name').textContent = vendor.name;
-        document.getElementById('my-id').textContent = vendor.id;
-        document.getElementById('my-commission-pct').textContent = `${vendor.commission}%`;
-
-        // Estadísticas
-        document.getElementById('my-product-count').textContent = inventory.length;
-
-        let totalValue = 0;
-        const mySales = movements.filter(m => m.type === 'venta' && m.vendor === vendor.name);
-        mySales.forEach(sale => {
-            const product = products.find(p => p.name === sale.product);
-            if (product) {
-                totalValue += sale.quantity * product.price;
-            }
-        });
-
-        document.getElementById('my-total-value').textContent = Utils.formatCurrency(totalValue);
+function showSuccess(msg) {
+    const successDiv = document.getElementById('success-message');
+    if (successDiv) {
+        successDiv.textContent = msg;
+        successDiv.style.display = 'block';
+        setTimeout(() => {
+            successDiv.style.display = 'none';
+        }, 3000);
     }
-};
+}
 
 // ============================================
 // INICIALIZACIÓN
 // ============================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Verificar si hay sesión guardada
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 Inicializando ConsignaEasy Vendor...');
+    
+    // Cargar URL del Apps Script
+    const savedUrl = localStorage.getItem('appsScriptUrl');
+    if (savedUrl) {
+        CONFIG.appsScriptUrl = savedUrl;
+    }
+
+    // Cargar datos
+    await loadVendorSelection();
+});
+
+// ============================================
+// SELECCIÓN DE VENDEDOR
+// ============================================
+
+async function loadVendorSelection() {
+    appState.vendors = await API.getVendors();
+    const container = document.getElementById('vendor-selection');
+    
+    if (!appState.vendors || appState.vendors.length === 0) {
+        container.innerHTML = '<p>No hay vendedores disponibles.</p>';
+        return;
+    }
+
+    let html = '<div class="vendor-grid">';
+    
+    appState.vendors.forEach(v => {
+        html += `
+            <div class="vendor-card" onclick="selectVendor('${v.id}')">
+                <h3>${v.nombre}</h3>
+                <p>Código: ${v.id}</p>
+                <p>Comisión: ${v.comision}%</p>
+                <button class="btn btn-primary">Ver Detalles</button>
+            </div>
+        `;
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+async function selectVendor(vendorId) {
+    CONFIG.currentVendor = vendorId;
+    const vendor = appState.vendors.find(v => v.id === vendorId);
+    
+    if (!vendor) {
+        showError('Vendedor no encontrado');
+        return;
+    }
+
+    localStorage.setItem('currentVendor', vendorId);
+    
+    // Ocultar selección y mostrar panel
+    document.getElementById('vendor-selection').style.display = 'none';
+    document.getElementById('vendor-panel').style.display = 'block';
+    
+    // Cargar datos del vendedor
+    await loadVendorDashboard(vendor);
+}
+
+function backToSelection() {
+    CONFIG.currentVendor = null;
+    localStorage.removeItem('currentVendor');
+    
+    document.getElementById('vendor-selection').style.display = 'block';
+    document.getElementById('vendor-panel').style.display = 'none';
+}
+
+// ============================================
+// DASHBOARD DEL VENDEDOR
+// ============================================
+
+async function loadVendorDashboard(vendor) {
+    try {
+        const inventory = await API.getInventory(vendor.id);
+        const movements = await API.getMovements(vendor.id);
+        appState.products = await API.getProducts();
+
+        // Actualizar encabezado
+        const headerName = document.getElementById('vendor-name');
+        if (headerName) headerName.textContent = vendor.nombre;
+
+        // Calcular estadísticas
+        const totalItems = inventory.reduce((sum, item) => sum + item.cantidad, 0);
+        const totalSales = movements
+            .filter(m => m.tipo === 'venta')
+            .reduce((sum, m) => {
+                const product = appState.products.find(p => p.producto === m.producto);
+                return sum + (m.cantidad * (product?.precio || 0));
+            }, 0);
+
+        const totalRestocks = movements
+            .filter(m => m.tipo === 'restock')
+            .reduce((sum, m) => sum + m.cantidad, 0);
+
+        // Actualizar cards
+        const totalItemsEl = document.getElementById('total-items');
+        const totalSalesEl = document.getElementById('total-sales');
+        const totalRestocksEl = document.getElementById('total-restocks');
+
+        if (totalItemsEl) totalItemsEl.textContent = totalItems;
+        if (totalSalesEl) totalSalesEl.textContent = '$' + totalSales.toFixed(2);
+        if (totalRestocksEl) totalRestocksEl.textContent = totalRestocks;
+
+        // Cargar tablas
+        await loadInventoryTable(vendor.id, inventory);
+        await loadMovementsTable(vendor.id, movements);
+
+        console.log('✅ Dashboard del vendedor cargado');
+    } catch (error) {
+        console.error('Error cargando dashboard:', error);
+        showError('Error al cargar datos');
+    }
+}
+
+// ============================================
+// INVENTARIO
+// ============================================
+
+async function loadInventoryTable(vendorId, inventory) {
+    const container = document.getElementById('inventory-table');
+    
+    if (!inventory || inventory.length === 0) {
+        container.innerHTML = '<p>No hay inventario registrado.</p>';
+        return;
+    }
+
+    let html = `
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Stock</th>
+                    <th>Precio</th>
+                    <th>Valor Total</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    let totalValue = 0;
+
+    inventory.forEach(item => {
+        const product = appState.products.find(p => p.producto === item.producto);
+        const price = product?.precio || 0;
+        const value = item.cantidad * price;
+        totalValue += value;
+
+        html += `
+            <tr>
+                <td>${item.producto}</td>
+                <td>${item.cantidad}</td>
+                <td>$${price.toFixed(2)}</td>
+                <td>$${value.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+            </tbody>
+        </table>
+        <div style="text-align: right; padding: 15px; background: #f5f5f5; border-radius: 6px; margin-top: 10px;">
+            <strong>Valor Total del Inventario: $${totalValue.toFixed(2)}</strong>
+        </div>
+    `;
+
+    container.innerHTML = html;
+}
+
+// ============================================
+// MOVIMIENTOS
+// ============================================
+
+async function loadMovementsTable(vendorId, movements) {
+    const container = document.getElementById('movements-table');
+    
+    if (!movements || movements.length === 0) {
+        container.innerHTML = '<p>No hay movimientos registrados.</p>';
+        return;
+    }
+
+    // Agrupar por fecha
+    const grouped = {};
+    movements.forEach(m => {
+        if (!grouped[m.fecha]) grouped[m.fecha] = [];
+        grouped[m.fecha].push(m);
+    });
+
+    let html = '';
+
+    Object.keys(grouped).sort().reverse().forEach(fecha => {
+        const dayMovements = grouped[fecha];
+        let dayTotal = 0;
+
+        html += `
+            <div class="movement-day">
+                <h4>📅 ${fecha}</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Tipo</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unit.</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        dayMovements.forEach(m => {
+            const product = appState.products.find(p => p.producto === m.producto);
+            const price = product?.precio || 0;
+            const total = m.cantidad * price;
+            
+            if (m.tipo === 'venta') {
+                dayTotal += total;
+            }
+
+            const typeLabel = m.tipo === 'venta' ? '📤 Venta' : '📥 Restock';
+            const typeColor = m.tipo === 'venta' ? '#e74c3c' : '#27ae60';
+
+            html += `
+                <tr>
+                    <td>${m.producto}</td>
+                    <td><span style="color: ${typeColor}; font-weight: bold;">${typeLabel}</span></td>
+                    <td>${m.cantidad}</td>
+                    <td>$${price.toFixed(2)}</td>
+                    <td>$${total.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+
+        html += `
+                    </tbody>
+                </table>
+        `;
+
+        if (dayTotal > 0) {
+            html += `
+                <div style="text-align: right; padding: 10px; background: #fff3cd; border-radius: 4px; margin-bottom: 20px;">
+                    <strong>Ventas del día: $${dayTotal.toFixed(2)}</strong>
+                </div>
+            `;
+        }
+
+        html += '</div>';
+    });
+
+    container.innerHTML = html;
+}
+
+// ============================================
+// UTILIDADES
+// ============================================
+
+async function refreshData() {
+    if (!CONFIG.currentVendor) {
+        showError('Selecciona un vendedor primero');
+        return;
+    }
+
+    const vendor = appState.vendors.find(v => v.id === CONFIG.currentVendor);
+    if (vendor) {
+        showSuccess('🔄 Actualizando...');
+        await loadVendorDashboard(vendor);
+        showSuccess('✅ Datos actualizados');
+    }
+}
+
+// Restaurar vendedor si estaba seleccionado
+window.addEventListener('load', async () => {
     const savedVendor = localStorage.getItem('currentVendor');
     if (savedVendor) {
-        CONFIG.currentVendor = JSON.parse(savedVendor);
-        document.getElementById('login-section').style.display = 'none';
-        document.getElementById('nav-section').style.display = 'flex';
-        document.getElementById('main-section').style.display = 'block';
-        document.querySelector('.header-subtitle').textContent = `Hola, ${CONFIG.currentVendor.name}`;
-        App.loadMyInventory();
-    } else {
-        App.init();
+        appState.vendors = await API.getVendors();
+        const vendor = appState.vendors.find(v => v.id === savedVendor);
+        if (vendor) {
+            await selectVendor(savedVendor);
+        }
     }
 });

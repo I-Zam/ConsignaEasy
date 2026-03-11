@@ -4,133 +4,178 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ConsignaEasy - Vendedor</title>
-    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles-sheets.css">
+    <style>
+        .vendor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .vendor-card {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .vendor-card:hover {
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .vendor-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .vendor-card p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .movement-day {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .movement-day h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .vendor-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vendor-header h2 {
+            margin: 0;
+        }
+
+        .btn-back {
+            background: white;
+            color: #667eea;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-back:hover {
+            background: #f0f0f0;
+        }
+
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .dashboard-card {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .dashboard-card h4 {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .dashboard-card .value {
+            font-size: 2em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .vendor-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .vendor-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table {
+                font-size: 0.85em;
+            }
+
+            .table th,
+            .table td {
+                padding: 8px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="app">
+    <div class="container">
         <!-- HEADER -->
-        <header class="header">
-            <div class="header-content">
-                <h1>🎁 ConsignaEasy</h1>
-                <p class="header-subtitle">Mi Inventario</p>
-            </div>
-        </header>
-
-        <!-- LOGIN SECTION -->
-        <div id="login-section" class="page active">
-            <div class="page-header" style="margin-top: 40px;">
-                <h2>Bienvenido</h2>
-                <p>Selecciona tu código de vendedor</p>
-            </div>
-
-            <div class="section" style="margin-top: 40px;">
-                <label class="label">Tu Código de Vendedor:</label>
-                <select id="vendor-select" class="input-select">
-                    <option value="">-- Selecciona tu código --</option>
-                </select>
-                <button class="btn btn-primary btn-large" onclick="App.loginVendor()" style="margin-top: 16px;">
-                    Entrar
-                </button>
-            </div>
+        <div class="header">
+            <h1>🎁 ConsignaEasy</h1>
+            <p>Panel de Vendedor</p>
         </div>
 
-        <!-- NAVIGATION -->
-        <nav class="nav" id="nav-section" style="display: none;">
-            <button class="nav-btn active" data-page="my-inventory">📦 Mi Inventario</button>
-            <button class="nav-btn" data-page="my-sales">📊 Mis Ventas</button>
-            <button class="nav-btn" data-page="my-info">ℹ️ Mi Info</button>
-        </nav>
+        <!-- MENSAJES -->
+        <div id="error-message" class="alert alert-error" style="display: none;"></div>
+        <div id="success-message" class="alert alert-success" style="display: none;"></div>
 
-        <!-- PAGES -->
-        <main class="main" id="main-section" style="display: none;">
-            <!-- MY INVENTORY PAGE -->
-            <div id="my-inventory" class="page active">
-                <div class="page-header">
-                    <h2>📦 Mi Inventario Actual</h2>
-                    <button class="btn btn-secondary btn-small" onclick="App.logout()">Salir</button>
-                </div>
+        <!-- SELECCIÓN DE VENDEDOR -->
+        <div id="vendor-selection">
+            <h2 style="text-align: center; margin-bottom: 30px;">Selecciona tu Perfil</h2>
+            <div id="vendor-selection"></div>
+        </div>
 
-                <div id="my-inventory-list" class="list"></div>
+        <!-- PANEL DEL VENDEDOR -->
+        <div id="vendor-panel" style="display: none;">
+            <div class="vendor-header">
+                <h2 id="vendor-name">Vendedor</h2>
+                <button class="btn-back" onclick="backToSelection()">← Cambiar Vendedor</button>
             </div>
 
-            <!-- MY SALES PAGE -->
-            <div id="my-sales" class="page">
-                <div class="page-header">
-                    <h2>📊 Mis Ventas</h2>
-                    <button class="btn btn-secondary btn-small" onclick="App.logout()">Salir</button>
+            <!-- DASHBOARD -->
+            <div class="dashboard-cards">
+                <div class="dashboard-card">
+                    <h4>Stock Total</h4>
+                    <div class="value" id="total-items">0</div>
                 </div>
-
-                <div class="section">
-                    <label class="label">Filtrar por período:</label>
-                    <select id="sales-period" class="input-select" onchange="App.loadMySales()">
-                        <option value="all">Todos los tiempos</option>
-                        <option value="month">Este mes</option>
-                        <option value="week">Esta semana</option>
-                    </select>
+                <div class="dashboard-card">
+                    <h4>Ventas Totales</h4>
+                    <div class="value" id="total-sales">$0</div>
                 </div>
-
-                <div id="my-sales-list" class="list"></div>
-
-                <div class="section summary" style="margin-top: 24px;">
-                    <div class="summary-item">
-                        <span>Total Vendido:</span>
-                        <strong id="my-total-sales">$0.00</strong>
-                    </div>
-                    <div class="summary-item">
-                        <span>Comisión:</span>
-                        <strong id="my-commission">$0.00</strong>
-                    </div>
-                    <div class="summary-item highlight">
-                        <span>A Recibir:</span>
-                        <strong id="my-to-receive">$0.00</strong>
-                    </div>
+                <div class="dashboard-card">
+                    <h4>Restock Total</h4>
+                    <div class="value" id="total-restocks">0</div>
                 </div>
             </div>
 
-            <!-- MY INFO PAGE -->
-            <div id="my-info" class="page">
-                <div class="page-header">
-                    <h2>ℹ️ Mi Información</h2>
-                    <button class="btn btn-secondary btn-small" onclick="App.logout()">Salir</button>
-                </div>
+            <!-- INVENTARIO -->
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">📦 Mi Inventario Actual</h3>
+            <div id="inventory-table"></div>
 
-                <div class="section">
-                    <div class="info-card">
-                        <div class="info-label">Nombre:</div>
-                        <div class="info-value" id="my-name">-</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">Código:</div>
-                        <div class="info-value" id="my-id">-</div>
-                    </div>
-                    <div class="info-card">
-                        <div class="info-label">Comisión:</div>
-                        <div class="info-value" id="my-commission-pct">-</div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <h3>Estadísticas</h3>
-                    <div class="stats">
-                        <div class="stat-card">
-                            <div class="stat-label">PRODUCTOS</div>
-                            <div class="stat-value" id="my-product-count">0</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-label">TOTAL VENDIDO</div>
-                            <div class="stat-value" id="my-total-value">$0.00</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="section">
-                    <button class="btn btn-danger btn-large" onclick="App.logout()">
-                        Cerrar Sesión
-                    </button>
-                </div>
-            </div>
-        </main>
+            <!-- MOVIMIENTOS -->
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">📊 Historial de Movimientos</h3>
+            <button class="btn btn-primary" onclick="refreshData()" style="margin-bottom: 15px;">🔄 Actualizar</button>
+            <div id="movements-table"></div>
+        </div>
     </div>
 
     <script src="app-vendor.js"></script>
