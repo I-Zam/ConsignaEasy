@@ -1,462 +1,61 @@
+
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConsignaEasy - Admin</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 5px;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .alert-error {
-            background: #fed7d7;
-            color: #742a2a;
-            border-left: 4px solid #742a2a;
-        }
-
-        .alert-success {
-            background: #c6f6d5;
-            color: #22543d;
-            border-left: 4px solid #22543d;
-        }
-
-        .alert.show {
-            display: block;
-        }
-
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .nav-btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: all 0.3s;
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-
-        .nav-btn.active {
-            background: #667eea;
-            color: white;
-        }
-
-        .nav-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .section {
-            display: none;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .section.active {
-            display: block;
-        }
-
-        .section h2 {
-            margin-bottom: 20px;
-            color: #333;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 1em;
-            font-family: inherit;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
-        }
-
-        .btn-success {
-            background: #48bb78;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #38a169;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: #f7fafc;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-        }
-
-        .card h3 {
-            margin-bottom: 10px;
-            color: #2d3748;
-        }
-
-        .card p {
-            color: #718096;
-            margin-bottom: 5px;
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .table th,
-        .table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .table th {
-            background: #f7fafc;
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .table tr:hover {
-            background: #f7fafc;
-        }
-
-        .product-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            background: #f9f9f9;
-        }
-
-        .product-info {
-            flex: 1;
-        }
-
-        .product-info strong {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .product-info p {
-            margin: 0;
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .product-inputs {
-            display: flex;
-            gap: 10px;
-        }
-
-        .product-inputs input {
-            width: 100px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 0.9em;
-        }
-
-        .visit-summary {
-            background: #e8f5e9;
-            border: 2px solid #4caf50;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-
-        .visit-summary h3 {
-            color: #2e7d32;
-            margin-bottom: 15px;
-        }
-
-        .visit-summary p {
-            margin: 10px 0;
-            font-size: 1.1em;
-        }
-
-        @media (max-width: 768px) {
-            .nav-buttons {
-                flex-direction: column;
-            }
-
-            .nav-btn {
-                width: 100%;
-            }
-
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
-            .product-row {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .product-inputs {
-                width: 100%;
-                margin-top: 10px;
-            }
-
-            .product-inputs input {
-                flex: 1;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<title>ConsignaEasy Pro - Admin</title>
+<link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎁 ConsignaEasy</h1>
-            <p>Panel de Administrador</p>
-        </div>
 
-        <div id="error-message" class="alert alert-error"></div>
-        <div id="success-message" class="alert alert-success"></div>
+<div class="container">
 
-        <div class="nav-buttons">
-            <button class="nav-btn active" onclick="showSection('config')">⚙️ CONFIG PRIMERO</button>
-            <button class="nav-btn" onclick="showSection('dashboard')">📊 Dashboard</button>
-            <button class="nav-btn" onclick="showSection('express')">⚡ Express</button>
-            <button class="nav-btn" onclick="showSection('inventory')">📦 Inventario</button>
-            <button class="nav-btn" onclick="showSection('vendors')">👥 Vendedores</button>
-            <button class="nav-btn" onclick="showSection('products')">📦 Productos</button>
-        </div>
+<h1>ConsignaEasy Pro</h1>
 
-        <!-- CONFIG -->
-        <div id="config" class="section active">
-            <h2>⚙️ CONFIGURACIÓN - PASO 1 OBLIGATORIO</h2>
-            <p style="color: #e74c3c; font-weight: bold; margin-bottom: 20px;">⚠️ Debes configurar la URL PRIMERO para que funcione todo</p>
-            
-            <div class="form-group">
-                <label>URL del Google Apps Script:</label>
-                <textarea id="appsScriptUrl" placeholder="Pega aquí la URL completa que comienza con https://script.google.com/macros/s/" rows="3"></textarea>
-                <small style="color: #666;">Ejemplo: https://script.google.com/macros/s/AKfycbzw5Q7BOMAOI68ANk_TH4DJc_09gIcZrXzkEbkqUaPVGZZvA_jgaEGzZhXXaJ4Zj_qf/exec</small>
-            </div>
-            
-            <button class="btn btn-primary" onclick="saveAppsScriptUrl()">💾 Guardar URL</button>
-            <button class="btn btn-success" onclick="syncData()" style="margin-left: 10px;">🔄 Sincronizar Datos</button>
-            <button class="btn btn-primary" onclick="clearCache()" style="margin-left: 10px;">🗑️ Limpiar Cache</button>
+<div class="card">
+<h2>Dashboard</h2>
+<button onclick="loadDashboard()">Actualizar</button>
+<div id="dashboard"></div>
+</div>
 
-            <div id="config-status" style="margin-top: 20px;"></div>
-        </div>
+<div class="card">
+<h2>Crear Vendedor</h2>
+<input id="vendor-id" placeholder="ID">
+<input id="vendor-name" placeholder="Nombre">
+<input id="vendor-commission" placeholder="Comisión %">
+<button onclick="addVendor()">Guardar</button>
+</div>
 
-        <!-- DASHBOARD -->
-        <div id="dashboard" class="section">
-            <h2>📊 Dashboard</h2>
-            <div class="grid">
-                <div class="card">
-                    <h3>Vendedores</h3>
-                    <p id="vendor-count">0</p>
-                </div>
-                <div class="card">
-                    <h3>Productos</h3>
-                    <p id="product-count">0</p>
-                </div>
-                <div class="card">
-                    <h3>Movimientos</h3>
-                    <p id="movement-count">0</p>
-                </div>
-                <div class="card">
-                    <h3>Total Ventas</h3>
-                    <p id="total-sales">$0</p>
-                </div>
-            </div>
-            <button class="btn btn-primary" onclick="loadDashboard()" style="margin-top: 20px;">🔄 Actualizar</button>
-        </div>
+<div class="card">
+<h2>Crear Producto</h2>
+<input id="product-category" placeholder="Categoría">
+<input id="product-name" placeholder="Producto">
+<input id="product-price" placeholder="Precio">
+<button onclick="addProduct()">Guardar</button>
+</div>
 
-        <!-- EXPRESS VISIT -->
-        <div id="express" class="section">
-            <h2>⚡ Visita Express (Registra en &lt;30 segundos)</h2>
-            <p style="color: #666; margin-bottom: 20px;">Selecciona un vendedor, registra ventas y restock, y guarda todo en un paso.</p>
-            
-            <div class="form-group">
-                <label>Selecciona Vendedor:</label>
-                <select id="express-vendor" onchange="startExpressVisit()">
-                    <option value="">-- Cargando vendedores --</option>
-                </select>
-            </div>
+<div class="card">
+<h2>Inventario Global</h2>
+<button onclick="loadInventory()">Actualizar Inventario</button>
+<div id="inventory"></div>
+</div>
 
-            <div id="express-products" style="display: none;"></div>
-        </div>
+<div class="card">
+<h2>Registrar Visita</h2>
 
-        <!-- INVENTARIO -->
-        <div id="inventory" class="section">
-            <h2>📦 Inventario Actual</h2>
-            <p style="color: #666; margin-bottom: 20px;">Stock disponible para cada vendedor.</p>
-            <button class="btn btn-primary" onclick="loadInventory()" style="margin-bottom: 20px;">🔄 Actualizar</button>
-            <div id="inventory-list"></div>
-        </div>
+<select id="visit-vendor"></select>
+<button onclick="startVisit()">Iniciar visita</button>
 
-        <!-- VENDEDORES -->
-        <div id="vendors" class="section">
-            <h2>👥 Gestión de Vendedores</h2>
-            
-            <div class="form-group">
-                <label>ID/Código:</label>
-                <input type="text" id="vendor-id" placeholder="ej: chimuelo_001">
-            </div>
-            <div class="form-group">
-                <label>Nombre:</label>
-                <input type="text" id="vendor-nombre" placeholder="ej: Chimuelo">
-            </div>
-            <div class="form-group">
-                <label>Comisión (%):</label>
-                <input type="number" id="vendor-comision" placeholder="ej: 30" min="0" max="100">
-            </div>
-            <button class="btn btn-primary" onclick="addVendor()">➕ Crear Vendedor</button>
+<div id="visit-area"></div>
 
-            <div id="vendors-list" style="margin-top: 30px;"></div>
-        </div>
+</div>
 
-        <!-- PRODUCTOS -->
-        <div id="products" class="section">
-            <h2>📦 Gestión de Productos</h2>
-            
-            <div class="form-group">
-                <label>Categoría:</label>
-                <input type="text" id="product-categoria" placeholder="ej: flexis">
-            </div>
-            <div class="form-group">
-                <label>Producto:</label>
-                <input type="text" id="product-nombre" placeholder="ej: Chimuelo">
-            </div>
-            <div class="form-group">
-                <label>Precio ($):</label>
-                <input type="number" id="product-precio" placeholder="ej: 45" min="0" step="0.01">
-            </div>
-            <button class="btn btn-primary" onclick="addProduct()">➕ Crear Producto</button>
+</div>
 
-            <div id="products-list" style="margin-top: 30px;"></div>
-        </div>
-    </div>
+<script src="config.js"></script>
+<script src="api.js"></script>
+<script src="admin.js"></script>
 
-    <script src="app-admin-sheets-api.js"></script>
-    <script>
-        // Inicializar al cargar
-        window.addEventListener('load', async () => {
-            console.log('🚀 Inicializando ConsignaEasy Admin...');
-            const savedUrl = localStorage.getItem('appsScriptUrl');
-            if (savedUrl) {
-                document.getElementById('appsScriptUrl').value = savedUrl;
-            }
-            await loadDashboard();
-        });
-
-        // Funciones de navegación
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            
-            const section = document.getElementById(sectionId);
-            if (section) {
-                section.classList.add('active');
-            }
-            
-            event.target.classList.add('active');
-        }
-    </script>
 </body>
 </html>
