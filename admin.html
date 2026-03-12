@@ -401,11 +401,38 @@
         <!-- Tabs -->
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="tab-btn" onclick="switchTab('initial')">🎯 Registro Inicial</button>
             <button class="tab-btn" onclick="switchTab('vendors')">👥 Vendedores</button>
             <button class="tab-btn" onclick="switchTab('products')">📦 Productos</button>
             <button class="tab-btn" onclick="switchTab('inventory')">📦 Inventario</button>
             <button class="tab-btn" onclick="switchTab('visits')">🚚 Visitas</button>
             <button class="tab-btn" onclick="switchTab('movements')">📝 Movimientos</button>
+        </div>
+
+        <!-- Initial Registration Tab -->
+        <div id="initial" class="tab-content">
+            <div class="card">
+                <h3>🎯 Registro Inicial de Inventario</h3>
+                <p style="margin-bottom: 20px; color: #666;">Registra el inventario inicial para cada vendedor. Este paso es obligatorio antes de registrar movimientos.</p>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Selecciona Vendedor</label>
+                        <select id="initialVendor" onchange="loadInitialProducts()"></select>
+                    </div>
+                </div>
+
+                <div id="initialProductsContainer" style="display: none;">
+                    <h4 style="margin: 20px 0 15px 0; color: var(--primary);">Cantidad Inicial por Producto</h4>
+                    <div id="initialProductsList" style="margin-bottom: 20px;"></div>
+                    <button onclick="saveInitialInventory()" style="background: var(--success);">💾 Guardar Inventario Inicial</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📋 Inventario Inicial Registrado</h3>
+                <div id="initialInventoryHistory"></div>
+            </div>
         </div>
 
         <!-- Dashboard Tab -->
@@ -781,9 +808,11 @@
                 return;
             }
 
-            const result = await callApi('createVisit', { vendedor, fecha, notas });
+            const result = await callApi('addVisit', { vendedor, notas });
             if (result) {
                 showAlert('Visita creada', 'success');
+                document.getElementById('visitVendor').value = '';
+                document.getElementById('visitDate').value = '';
                 document.getElementById('visitNotes').value = '';
                 loadVisits();
             }
