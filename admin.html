@@ -686,12 +686,24 @@
             const vendors = await callApi('getVendors');
             if (!vendors) return;
 
+            // Llenar tabla de vendedores
             let html = '<table><tr><th>ID</th><th>Nombre</th><th>Comisión</th></tr>';
             vendors.forEach(v => {
                 html += `<tr><td>${v.id}</td><td>${v.nombre}</td><td><span class="badge badge-success">${v.comision}%</span></td></tr>`;
             });
             html += '</table>';
             document.getElementById('vendorsList').innerHTML = html;
+
+            // Llenar dropdowns de vendedores
+            const vendorSelects = ['visitVendor', 'movVendor'];
+            vendorSelects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                let options = '<option value="">Selecciona un vendedor...</option>';
+                vendors.forEach(v => {
+                    options += `<option value="${v.id}">${v.nombre}</option>`;
+                });
+                select.innerHTML = options;
+            });
         }
 
         // ============================================
@@ -722,12 +734,21 @@
             const products = await callApi('getProducts');
             if (!products) return;
 
+            // Llenar tabla de productos
             let html = '<table><tr><th>Categoría</th><th>Producto</th><th>Precio</th></tr>';
             products.forEach(p => {
                 html += `<tr><td>${p.categoria}</td><td>${p.producto}</td><td>$${p.precio.toFixed(2)}</td></tr>`;
             });
             html += '</table>';
             document.getElementById('productsList').innerHTML = html;
+
+            // Llenar dropdown de productos
+            const productSelect = document.getElementById('movProduct');
+            let options = '<option value="">Selecciona un producto...</option>';
+            products.forEach(p => {
+                options += `<option value="${p.producto}">${p.producto} ($${p.precio.toFixed(2)})</option>`;
+            });
+            productSelect.innerHTML = options;
         }
 
         // ============================================
