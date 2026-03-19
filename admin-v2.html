@@ -722,9 +722,10 @@
             document.getElementById('vendorsList').innerHTML = html;
 
             // Llenar dropdowns de vendedores
-            const vendorSelects = ['visitVendor', 'movVendor'];
+            const vendorSelects = ['visitVendor', 'movVendor', 'initialVendor'];
             vendorSelects.forEach(selectId => {
                 const select = document.getElementById(selectId);
+                if (!select) return; // Saltar si no existe
                 let options = '<option value="">Selecciona un vendedor...</option>';
                 vendors.forEach(v => {
                     options += `<option value="${v.id}">${v.nombre}</option>`;
