@@ -991,12 +991,16 @@
 
             vendorSelects.forEach(id => {
                 const select = document.getElementById(id);
-                select.innerHTML = '<option value="">Selecciona un vendedor...</option>';
+                if (select && select.children.length === 0) {
+                    select.innerHTML = '<option value="">Selecciona un vendedor...</option>';
+                }
             });
 
             productSelects.forEach(id => {
                 const select = document.getElementById(id);
-                select.innerHTML = '<option value="">Selecciona un producto...</option>';
+                if (select && select.children.length === 0) {
+                    select.innerHTML = '<option value="">Selecciona un producto...</option>';
+                }
             });
         }
 
@@ -1006,11 +1010,15 @@
         // Inicializar
         initSelects();
         loadDashboard();
-        loadVendors();
-        loadProducts();
-        loadInventory();
-        loadMovements();
-        loadInitialInventoryHistory();
+        
+        // Cargar datos con delay para asegurar que se llenen los dropdowns
+        setTimeout(() => {
+            loadVendors();
+            loadProducts();
+            loadInventory();
+            loadMovements();
+            loadInitialInventoryHistory();
+        }, 100);
     </script>
 </body>
 </html>
